@@ -1,0 +1,78 @@
+---
+title: "Raport - Śledzie"
+author: "Mikołaj Mierzejewski"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+---
+
+# Karłowacenie śledzi oceanicznych
+
+##Podsumowanie
+
+lorem ipsum
+
+## Użyte biblioteki
+
+```{r biblioteki, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+```
+
+## Powtarzalność eksperymentów
+```{r seed, echo=FALSE, warning=FALSE, message=FALSE}
+seed_ustalony <- 23
+set.seed(seed_ustalony)
+```
+
+By eksperymenty były powtarzalne seed został określony na **`r seed_ustalony`**
+
+## Użyte dane
+
+lorem ipsum
+
+```{r wczytywanie_danych, cache=TRUE}
+df <- read.csv("sledzie.csv")
+```
+
+lorem ipsum
+
+### Brakujące dane
+```{r podgląd danych, echo=FALSE}
+head(df)
+```
+
+lorem ipsum
+
+TODO
+
+## Podsumowanie zbioru
+
+Zbiór składa się z `r nrow(df)` wierszy opisanych za pomocą `r ncol(df)` kolmn
+
+Kolejne kolumny w zbiorze danych to:
+
+* length: długość złowionego śledzia [cm];
+* cfin1: dostępność planktonu [zagęszczenie Calanus finmarchicus gat. 1];
+* cfin2: dostępność planktonu [zagęszczenie Calanus finmarchicus gat. 2];
+* chel1: dostępność planktonu [zagęszczenie Calanus helgolandicus gat. 1];
+* chel2: dostępność planktonu [zagęszczenie Calanus helgolandicus gat. 2];
+* lcop1: dostępność planktonu [zagęszczenie widłonogów gat. 1];
+* lcop2: dostępność planktonu [zagęszczenie widłonogów gat. 2];
+* fbar: natężenie połowów w regionie [ułamek pozostawionego narybku];
+* recr: roczny narybek [liczba śledzi];
+* cumf: łączne roczne natężenie połowów w regionie [ułamek pozostawionego narybku];
+* totaln: łączna liczba ryb złowionych w ramach połowu [liczba śledzi];
+* sst: temperatura przy powierzchni wody [°C];
+* sal: poziom zasolenia wody [Knudsen ppt];
+* xmonth: miesiąc połowu [numer miesiąca];
+* nao: oscylacja północnoatlantycka [mb].
+
+```{r summary, echo=FALSE}
+summary(df)
+```
+
