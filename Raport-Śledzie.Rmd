@@ -23,6 +23,7 @@ library(ggplot2)
 library(plotly)
 library(zoo)
 library(corrplot)
+library(caret)
 ```
 
 ## Powtarzalność eksperymentów
@@ -145,6 +146,15 @@ ggplot(df, aes(x = nao)) + geom_histogram(binwidth = .5) + geom_vline(aes(xinter
 ```
 
 ## Analiza wartości
+### Wykres
+```{r wykresy, echo=FALSE}
+plot_time <- ggplot(df, aes(x=X, y=length)) + geom_point() + geom_jitter()
+plot_time
+#ggplotly(plot_time)
+
+ggplot(df,aes(x=X, y=length, color=sst)) + geom_point()
+```
+
 ### Korelacje
 ```{r korelacje, echo=FALSE}
 corrplot(cor(df), number.cex = 0.5, addCoef.col = 1, type = 'upper')
@@ -152,11 +162,22 @@ corrplot(cor(df), number.cex = 0.5, addCoef.col = 1, type = 'upper')
 
 lorem ipsum
 
-### Wykresy
-```{r wykresy, echo=FALSE}
-plot_time <- ggplot(df, aes(x=X, y=length)) + geom_point() + geom_jitter()
-plot_time
-#ggplotly(plot_time)
+## Predykcja długości
 
-ggplot(df,aes(x=X, y=length, color=sst)) + geom_point()
+```{r predykcja_setup, echo=FALSE}
+library(caret)
+inTraining <- createDataPartition( y = df$length ,p = .7, list = FALSE)
+training <- df[ inTraining,]
+testing  <- df[-inTraining,]
+ctrl <- trainControl(method = "repeatedcv", number = 2, repeats = 5)
+```
+
+```{r, echo=FALSE}
+rfModel <- train(length ~ ., data = training, method = "rf", trControl = ctrl, tuneGrid = data.frame(mtry = 8), importance=TRUE)
+rfModel
+```
+## Analiza wyniku modelu
+```{r, echo=FALSE}
+importance <- varImp(rfModel, scale = FALSE)
+plot(importance, top=10)
 ```
