@@ -36,20 +36,19 @@ By eksperymenty były powtarzalne seed został określony na **`r seed_ustalony`
 
 ## Użyte dane
 
-lorem ipsum
+Dane wczytywne są z pliku *sledzie.csv*.
 
 ```{r wczytywanie_danych, cache=TRUE}
 df <- read.csv("sledzie.csv")
 ```
 
-lorem ipsum
 
 ### Brakujące dane
 ```{r podgląd danych, echo=FALSE}
 head(df)
 ```
 
-lorem ipsum
+Przy przeglądzie danych da się zauważyć puste wartości reprezentowane przez znak '?':
 
 ```{r czyszczenie_danych, echo=FALSE, warning=FALSE}
 df <- as.data.frame(sapply(df, as.numeric))
@@ -57,9 +56,11 @@ df <- na.aggregate(df)
 head(df)
 ```
 
+W celu uporania się z tym problemem typ danych został zmieniony na *numeric*, a powstałe w taki sposób wartości *NA* za pomocą *na.aggregate* uśrednione wzlędem swoich sąsiadów.
+
 ## Podsumowanie zbioru
 
-Zbiór składa się z `r nrow(df)` wierszy opisanych za pomocą `r ncol(df)` kolmn. Postawowe statystiki zbioru prezentują się następująco:
+Zbiór składa się z ** `r nrow(df)` ** wierszy opisanych za pomocą ** `r ncol(df)` ** kolmn. Postawowe statystiki zbioru prezentują się następująco:
 
 
 ```{r summary, echo=FALSE}
@@ -68,7 +69,7 @@ summary(df)
 
 ## Rozkłady zmiennych
 
-lorem ipsum
+Poniżej prezentowane są histogramy otyczące dostępnych w zbiorze danych zmiennych.
 
 ### Długość złowionego śledzia [cm] - length
 ```{r, echo=FALSE, warning=FALSE}
@@ -145,26 +146,47 @@ ggplot(df, aes(x = xmonth)) + geom_histogram(binwidth = .5) + geom_vline(aes(xin
 ggplot(df, aes(x = nao)) + geom_histogram(binwidth = .5) + geom_vline(aes(xintercept = mean(nao, na.rm = T)), colour = "red")
 ```
 
-## Analiza wartości
+## Analiza
 ### Wykres
-```{r wykresy, echo=FALSE}
-plot_time <- ggplot(df, aes(x=X, y=length)) + geom_point() + geom_jitter()
-plot_time
-#ggplotly(plot_time)
-
-ggplot(df,aes(x=X, y=length, color=sst)) + geom_point()
+```{r wykresy, echo=FALSE, cache=TRUE}
+plot_time <- ggplot(df, aes(x=X, y=length)) + geom_point() + geom_jitter() 
+ggplotly(plot_time)
 ```
 
+Na wyżej wyświetlonym wykresie zaprezentowano zmiany długości śledzi oceanicznych wyławianych w Europie z ostatnich 60 lat. Zwizualizowane dane potwierdzają zaobserwowany trend, dotyczący karłowacenia wyławianych śledzi. 
+
 ### Korelacje
+
+W celu określenia wpływowości argumentów na długość i zwizualizowania ich stworzono poniższą macierz:
+
 ```{r korelacje, echo=FALSE}
 corrplot(cor(df), number.cex = 0.5, addCoef.col = 1, type = 'upper')
 ```
 
-lorem ipsum
+Na powyższym wykresie korelacji można zaobserwować interesujących nas z perspektywy długości śledzi korelacji. 
+Dodatnią korelację w pewnym stopniu wykazuje:
+
+* Natężenie połowów w regionie [ułamek pozostawionego narybku] - fbar,
+
+* Dostępność planktonu [zagęszczenie widłonogów gat. 1] - lcop1,
+
+* Dostępność planktonu [zagęszczenie Calanus helgolandicus gat. 1] - chel1,
+
+natomiast negatywnie skorelowane z długością śledzi są:
+
+* Temperatura przy powierzchni wody [°C] - sst,
+
+* Oscylacja północnoatlantycka [mb] - nao.
+
+## Wnioski
+
+Z pośród wszystkich wymienionych mocniej skorelowanych argumentów, najbardziej wpływowy zdaje się być *temperatura przy powierzchni wody*.
+Uwagę jednak, poza bezpośrednio najbardziej wpływowym  parametrem *sst*, może wzbudzić *oscylacja północnoatlantycka*. Parametr ten rosnie z czasem (korelacja dodatnia z *X*) i jest zdecydowanie negatynie skorelowane z *zagęszczenie widłonogów gat. 1* i *zagęszczenie Calanus helgolandicus gat. 1*. Warto również zwrócić uwage na zdecydowanie pozytywną korelację parametru z *temperaturą przy powierzchni wody*.
+Najbardziej znaczącym jednak parametrem zdaje się być *temperatura* (na którą lokalny wpływ ma *oscylacja północnoatlantycka*) i to w nim, wraz z parametrem *nao*, można wyszukiwać pośredniogo jak i bezpośredniego powodu obserwowanych zmian. 
 
 ## Predykcja długości
 
-```{r predykcja_setup, echo=FALSE}
+```{r predykcja_setup, echo=FALSE, cache=TRUE}
 library(caret)
 inTraining <- createDataPartition( y = df$length ,p = .7, list = FALSE)
 training <- df[ inTraining,]
@@ -172,12 +194,15 @@ testing  <- df[-inTraining,]
 ctrl <- trainControl(method = "repeatedcv", number = 2, repeats = 5)
 ```
 
-```{r, echo=FALSE}
-rfModel <- train(length ~ ., data = training, method = "rf", trControl = ctrl, tuneGrid = data.frame(mtry = 8), importance=TRUE)
+```{r, echo=FALSE, cache=TRUE}
+rfModel <- train(length ~ ., data = training, method = "rf", trControl = ctrl, tuneGrid = data.frame(mtry = 8), importance = TRUE)
 rfModel
 ```
-## Analiza wyniku modelu
-```{r, echo=FALSE}
-importance <- varImp(rfModel, scale = FALSE)
+## Wyniki modelu
+
+Poniżej prezentuje się rezultat wytrenowania i modelu (Random Forest), zawierający znaczące parametry odnoszące się do długości śledzi.
+
+```{r, echo=FALSE, cache=TRUE}
+importance <- varImp(rfModel, scale = TRUE)
 plot(importance, top=10)
 ```
